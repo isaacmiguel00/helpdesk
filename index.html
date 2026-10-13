@@ -38,6 +38,33 @@ th{text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;font-weight:60
 .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px}
 .k{font-feature-settings:'tnum';font-weight:600}.ki{float:right;font-size:22px;color:var(--a);opacity:.65}
 .bi{vertical-align:-.125em}.btn .bi,nav .bi,.hb .bi{margin-right:6px}.btn .bi:only-child,.hb .bi:only-child{margin:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.93) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+body,.card,header,input,select,textarea,dialog{transition:background-color .35s,color .35s,border-color .35s}
+header{animation:drop .5s ease backwards}
+#v>*,#lg{animation:fadeUp .4s ease backwards}#v>.grid{animation:none}
+.grid>.card{animation:fadeUp .45s ease backwards;transition:transform .2s,box-shadow .2s,background-color .35s}.grid>.card:nth-child(2){animation-delay:0.06s}.grid>.card:nth-child(3){animation-delay:0.12s}.grid>.card:nth-child(4){animation-delay:0.18s}.grid>.card:nth-child(5){animation-delay:0.24s}.grid>.card:nth-child(6){animation-delay:0.30s}.grid>.card:nth-child(7){animation-delay:0.36s}.grid>.card:nth-child(8){animation-delay:0.42s}.grid>.card:nth-child(9){animation-delay:0.48s}.grid>.card:nth-child(10){animation-delay:0.54s}.grid>.card:nth-child(11){animation-delay:0.60s}.grid>.card:nth-child(12){animation-delay:0.66s}
+.grid>.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px #0002}
+.ki{transition:transform .3s}.card:hover .ki{transform:scale(1.2) rotate(-8deg)}
+.br i{transform-origin:left;animation:grow .9s cubic-bezier(.2,.8,.2,1) backwards}
+tbody tr{animation:fadeUp .3s ease backwards}tbody tr:hover{background:color-mix(in srgb,var(--a) 8%,transparent)}
+dialog[open]{animation:pop .25s cubic-bezier(.2,.9,.3,1.2)}dialog::backdrop{animation:fade .25s both;backdrop-filter:blur(2px)}
+.btn,.hb,nav button{transition:transform .15s,box-shadow .15s,background-color .2s}
+.btn:hover,.hb:hover,nav button:hover{transform:translateY(-2px);box-shadow:0 6px 14px #0003}
+.btn:active,.hb:active,nav button:active{transform:scale(.95);box-shadow:none}
+.btn:disabled{opacity:.7;cursor:wait}
+.ld{position:relative;color:transparent!important;pointer-events:none}.ld .bi{visibility:hidden}
+.ld::after{content:'';position:absolute;inset:0;margin:auto;width:16px;height:16px;border:2px solid #fff;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.warn{animation:pop .4s backwards}
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:99}
+.toast{display:flex;gap:10px;align-items:center;padding:11px 16px;border-radius:10px;background:var(--c);color:var(--t);border-left:4px solid #16a34a;box-shadow:0 8px 24px #0004;animation:slideIn .3s ease backwards;max-width:340px;transition:opacity .3s,transform .3s}
+.toast.err{border-color:#dc2626}.toast.err .bi{color:#dc2626}.toast.ok .bi{color:#16a34a}.toast.out{opacity:0;transform:translateX(34px)}
+@media(prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition:none!important}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -58,27 +85,59 @@ let sb,sb2,U,V='dash',F={q:'',e:'',t:''},OK=0,TC=[];
 const M=()=>U&&U.r==='master',th=()=>localStorage['tvt_'+U.id]||'claro',BK='adjuntos';
 const tk=async()=>(await sb.from('tickets').select('*').order('id',{ascending:false}).limit(5000)).data||[];
 /* ---------- Sesión (Supabase Auth). Los permisos reales los aplica la base de datos (RLS) ---------- */
-async function boot(){
- if(SB_URL.startsWith('PEGA'))return $('#app').innerHTML='<main><div class="card warn">Configura <b>SB_URL</b> y <b>SB_KEY</b> al inicio de index.html.</div></main>';
- sb=supabase.createClient(SB_URL,SB_KEY);sb2=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
- sb.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY')setTimeout(chpw,500)});
- (await sb.auth.getSession()).data.session?enter():loginUI()}
-async function enter(){const {data:{user}}=await sb.auth.getUser();const {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
- if(!p||!p.a){await sb.auth.signOut();loginUI();$('#le').textContent='Cuenta inactiva. Pide al MASTER que la active.';return}U=p;shell()}
-function loginUI(){$('#app').innerHTML=`<main><div class="card" id="lg"><h2><i class="bi bi-headset"></i> TV Helpdesk</h2><label>Correo</label><input id="lu" type="email" autocomplete="username"><label>Contraseña</label><input id="lp" type="password" autocomplete="current-password" onkeydown="event.key=='Enter'&&login()"><p id="le" style="color:#dc2626"></p><button class="btn" style="width:100%" onclick="login()">Entrar</button><p class="s" style="text-align:center"><a href="#" onclick="forgot();return false">Olvidé mi contraseña</a></p></div></main><footer>Diseñado por TECHNOVARUM</footer>`}
-async function login(){const L=JSON.parse(localStorage.tvl||'{"n":0,"t":0}');if(L.t>Date.now())return $('#le').textContent='Demasiados intentos. Espera 1 minuto.';
- const {error}=await sb.auth.signInWithPassword({email:$('#lu').value.trim(),password:$('#lp').value});
- if(!error){localStorage.tvl='{"n":0,"t":0}';enter()}else{L.n++;if(L.n>=5){L.n=0;L.t=Date.now()+6e4}localStorage.tvl=JSON.stringify(L);$('#le').textContent='Correo o contraseña incorrectos'}}
-async function forgot(){const e=$('#lu').value.trim();if(!e)return alert('Escribe tu correo arriba');await sb.auth.resetPasswordForEmail(e,{redirectTo:location.href.split('#')[0]});alert('Si el correo existe, recibirás un enlace para restablecer.')}
+const msg=t=>{const e=$('#le');if(e)e.textContent=t};
+function errT(e){const m=String(e&&e.message||e).toLowerCase();
+ if(m.includes('invalid login'))return 'Correo o contraseña incorrectos';
+ if(m.includes('not confirmed'))return 'Correo sin confirmar. En Supabase: Authentication > Users, o desactiva «Confirm email»';
+ if(m.includes('not authorized'))return 'Supabase solo envía correos a miembros de tu organización hasta que configures un SMTP propio';
+ if(m.includes('rate limit'))return 'Límite de correos alcanzado. Espera un rato e inténtalo de nuevo';
+ if(m.includes('security purposes'))return 'Espera unos segundos antes de pedir otro enlace';
+ if(m.includes('fetch')||m.includes('network'))return 'Sin conexión con Supabase. Revisa tu internet y SB_URL';
+ return 'Error: '+(e.message||e)}
+function chk(){try{const u=new URL(SB_URL.trim());if(!/\.supabase\.co$/.test(u.hostname))return 'SB_URL no parece una URL de Supabase';
+ const k=SB_KEY.trim();if(k.startsWith('eyJ')){const p=JSON.parse(atob(k.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+  if(p.role!=='anon')return 'SB_KEY no es la clave «anon public» (jamás uses service_role)';if(p.ref&&u.hostname.split('.')[0]!==p.ref)return 'SB_URL y SB_KEY son de proyectos distintos'}}catch(e){return 'SB_URL o SB_KEY están mal pegadas'}return ''}
+async function boot(){const bad=chk();if(bad)return $('#app').innerHTML=`<main><div class="card warn"><i class="bi bi-exclamation-triangle-fill"></i> ${bad}</div></main>`;
+ const o=new URL(SB_URL.trim()).origin,K=SB_KEY.trim();sb=supabase.createClient(o,K);sb2=supabase.createClient(o,K,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ const h=location.hash,{data:{session}}=await sb.auth.getSession();
+ if(session&&/type=recovery/.test(h))return recoveryUI();
+ if(session)return enter();
+ loginUI();if(/error_description=/.test(h)){msg('El enlace expiró o ya fue usado. Solicita uno nuevo.');history.replaceState(null,'',location.pathname)}}
+async function enter(f){try{const {data:{user}}=await sb.auth.getUser();if(!user)throw Error('sin sesión');
+ const {data:p,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+ if(error)throw Error('Base de datos: '+error.message+' (¿ejecutaste setup.sql?)');
+ if(!p){await sb.auth.signOut();loginUI();return msg('Tu usuario existe pero no tiene perfil. Ejecuta repair.sql en Supabase.')}
+ if(!p.a){await sb.auth.signOut();loginUI();return msg('Cuenta deshabilitada. Pide al MASTER que la active.')}
+ U=p;shell();if(f)toast('Bienvenido, '+p.n)}catch(x){await sb.auth.signOut().catch(()=>0);loginUI();msg(errT(x))}}
+function loginUI(){$('#app').innerHTML=`<main><div class="card" id="lg"><h2><i class="bi bi-headset"></i> TV Helpdesk</h2><label>Correo</label><input id="lu" type="email" autocomplete="username"><label>Contraseña</label><input id="lp" type="password" autocomplete="current-password" onkeydown="event.key=='Enter'&&login()"><p id="le" style="color:#dc2626;min-height:1.2em"></p><button class="btn" id="lb" style="width:100%" onclick="login()">Entrar</button><p class="s" style="text-align:center"><a href="#" onclick="forgot();return false">Olvidé mi contraseña</a></p></div></main><footer>Diseñado por TECHNOVARUM</footer>`}
+async function login(){const L=JSON.parse(localStorage.tvl||'{"n":0,"t":0}');if(L.t>Date.now())return msg('Demasiados intentos. Espera 1 minuto.');
+ const em=$('#lu').value.trim(),pw=$('#lp').value;if(!em||!pw)return msg('Escribe tu correo y contraseña');
+ const b=$('#lb');b.disabled=true;b.classList.add('ld');msg('');
+ try{const {error}=await sb.auth.signInWithPassword({email:em,password:pw});
+  if(!error){localStorage.tvl='{"n":0,"t":0}';return enter(1)}
+  if(/invalid login/i.test(error.message)){L.n++;if(L.n>=5){L.n=0;L.t=Date.now()+6e4}localStorage.tvl=JSON.stringify(L)}msg(errT(error))}catch(x){msg(errT(x))}
+ b.disabled=false;b.classList.remove('ld')}
+async function forgot(){const e=$('#lu').value.trim();if(!e)return msg('Escribe tu correo arriba y vuelve a pulsar «Olvidé mi contraseña»');
+ const {error}=await sb.auth.resetPasswordForEmail(e,{redirectTo:location.origin+location.pathname});if(error)return msg(errT(error));msg('');toast('Si el correo está registrado, recibirás el enlace en unos minutos')}
 async function logout(){await sb.auth.signOut();U=null;loginUI()}
-async function chpw(){const p=prompt('Nueva contraseña (mín. 8 caracteres):');if(!p)return;if(p.length<8)return alert('Mínimo 8');const {error}=await sb.auth.updateUser({password:p});alert(error?error.message:'Contraseña actualizada')}
+const pw=r=>`<label>Nueva contraseña (mín. 8)</label><input id="p1" type="password" autocomplete="new-password"><label>Confirmar contraseña</label><input id="p2" type="password" autocomplete="new-password" onkeydown="event.key=='Enter'&&setpw(${r})">`;
+function chpw(){$('#dlg').innerHTML=`<h3>Cambiar mi contraseña</h3>${pw(0)}<div class="row" style="margin-top:12px"><button class="btn o" onclick="$('#dlg').close()">Cancelar</button><button class="btn" onclick="setpw(0)">Guardar</button></div>`;$('#dlg').showModal()}
+function recoveryUI(){$('#app').innerHTML=`<main><div class="card" id="lg"><h2><i class="bi bi-shield-lock"></i> Nueva contraseña</h2>${pw(1)}<button class="btn" style="width:100%;margin-top:14px" onclick="setpw(1)">Guardar y entrar</button></div></main><footer>Diseñado por TECHNOVARUM</footer>`}
+async function setpw(rec){const a=$('#p1').value,b=$('#p2').value;if(a.length<8)return alert('La contraseña debe tener mínimo 8 caracteres');if(a!==b)return alert('Las contraseñas no coinciden');
+ const {error}=await sb.auth.updateUser({password:a});if(error)return alert(/different/i.test(error.message)?'Error: la nueva contraseña debe ser distinta a la actual':'Error: '+error.message);
+ toast('Contraseña actualizada');if(rec){history.replaceState(null,'',location.pathname);enter(1)}else $('#dlg').close()}
+/* ---------- Avisos y contadores animados ---------- */
+function toast(m,t){let c=$('#toasts');if(!c){c=document.createElement('div');c.id='toasts';document.body.appendChild(c)}const e=document.createElement('div');e.className='toast '+(t||'ok');e.innerHTML=`<i class="bi bi-${t==='err'?'x-octagon-fill':'check-circle-fill'}"></i><span>${esc(m)}</span>`;c.appendChild(e);setTimeout(()=>{e.classList.add('out');setTimeout(()=>e.remove(),300)},3500)}
+window.alert=m=>toast(m,/error|no puedes|solo el|mínim|obligatori|inválid|incorrect|supera|sigue|máximo|sin permiso|demasiad|formato|no se pudo|no coinciden|escribe/i.test(m)?'err':'ok');
+window.addEventListener('unhandledrejection',e=>toast('Error: '+(e.reason&&e.reason.message||e.reason),'err'));
+function countUp(){document.querySelectorAll('.k').forEach(e=>{const m=e.textContent.match(/^(\d+(?:\.\d+)?)(.*)$/);if(!m)return;const to=+m[1],d=m[1].includes('.')?1:0,t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/700);e.textContent=(to*(1-Math.pow(1-p,3))).toFixed(d)+m[2];if(p<1)requestAnimationFrame(f)})(t0)})}
 /* ---------- Shell ---------- */
 function shell(){document.documentElement.dataset.t=th();
  const nav=[['dash','<i class="bi bi-speedometer2"></i>Dashboard'],['list','<i class="bi bi-ticket-detailed"></i>Tickets'],...(M()?[['users','<i class="bi bi-people"></i>Usuarios'],['store','<i class="bi bi-hdd-stack"></i>Almacenamiento']]:[])];
  $('#app').innerHTML=`<header><b><i class="bi bi-headset"></i> TV Helpdesk ${TH[th()][1]}</b><nav>${nav.map(n=>`<button id="n_${n[0]}" onclick="go('${n[0]}')">${n[1]}</button>`).join('')}</nav>
  <select onchange="localStorage['tvt_'+U.id]=this.value;shell()">${Object.entries(TH).map(([k,v])=>`<option value="${k}" ${k==th()?'selected':''}>${v[0]}</option>`).join('')}</select>
  <span>${esc(U.n)} (${M()?'MASTER':'Usuario'})</span><button class="hb" title="Cambiar mi contraseña" onclick="chpw()"><i class="bi bi-key"></i></button><button class="hb" onclick="logout()"><i class="bi bi-box-arrow-right"></i>Salir</button></header><main id="v"></main><footer>Diseñado por TECHNOVARUM</footer>`;go(V)}
-async function go(v){V=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.id==='n_'+v));await({dash,list,users,store}[v]||dash)()}
+async function go(v){V=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.id==='n_'+v));await({dash,list,users,store}[v]||dash)();countUp()}
 /* ---------- Dashboard ---------- */
 const cnt=(a,f)=>a.reduce((o,x)=>(o[f(x)]=(o[f(x)]||0)+1,o),{});
 const bar=(t,o,order)=>{const ks=order||Object.keys(o),mx=Math.max(1,...ks.map(k=>o[k]||0));return`<div class="card"><b>${t}</b>${ks.map(k=>`<div class="br"><span>${esc(k)}</span><i style="width:${(o[k]||0)/mx*60}%"></i><span>${o[k]||0}</span></div>`).join('')}</div>`};
@@ -88,10 +147,10 @@ async function dash(){const T=await tk(),cl=T.filter(t=>t.cl),av=cl.length?cl.re
  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${bar('Por estado',cnt(T,t=>t.e),['Abierto','En proceso','Cerrado'])}${bar('Por prioridad',cnt(T,t=>t.p),['Crítica','Alta','Media','Baja'])}${bar('Por tipo',cnt(T,t=>t.t))}${bar('Por categoría',cnt(T,t=>t.k))}${bar('Últimos 7 días',c7,d7)}${bar('Por usuario',cnt(T,t=>t.por))}</div>`}
 /* ---------- Tickets ---------- */
 const PR=['Baja','Media','Alta','Crítica'],ES=['Abierto','En proceso','Cerrado'],CA=['Hardware','Software','Red','Accesos','Mantenimiento','Otro'];
-async function list(){TC=await tk();$('#v').innerHTML=`<div class="card"><div class="row"><input placeholder="Buscar ticket…" value="${esc(F.q)}" oninput="F.q=this.value;rows()"><select onchange="F.e=this.value;rows()"><option value="">Todos los estados</option>${ES.map(e=>`<option ${F.e==e?'selected':''}>${e}</option>`).join('')}</select><select onchange="F.t=this.value;rows()"><option value="">Todos los tipos</option>${['Incidencia','Requerimiento'].map(e=>`<option ${F.t==e?'selected':''}>${e}</option>`).join('')}</select><button class="btn" onclick="form()"><i class="bi bi-plus-lg"></i>Nuevo ticket</button></div></div><div class="card tw"><table><thead><tr><th>#</th><th>Tipo</th><th>Título</th><th>Prioridad</th><th>Estado</th><th>Creó</th><th>Fecha</th><th><i class="bi bi-paperclip"></i></th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;rows()}
+async function list(){TC=await tk();$('#v').innerHTML=`<div class="card"><div class="row"><input placeholder="Buscar ticket…" value="${esc(F.q)}" oninput="F.q=this.value;rows()"><select onchange="F.e=this.value;rows()"><option value="">Todos los estados</option>${ES.map(e=>`<option ${F.e==e?'selected':''}>${e}</option>`).join('')}</select><select onchange="F.t=this.value;rows()"><option value="">Todos los tipos</option>${['Incidencia','Requerimiento'].map(e=>`<option ${F.t==e?'selected':''}>${e}</option>`).join('')}</select><button class="btn" onclick="tform()"><i class="bi bi-plus-lg"></i>Nuevo ticket</button></div></div><div class="card tw"><table><thead><tr><th>#</th><th>Tipo</th><th>Título</th><th>Prioridad</th><th>Estado</th><th>Creó</th><th>Fecha</th><th><i class="bi bi-paperclip"></i></th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;rows()}
 function rows(){const q=F.q.toLowerCase(),T=TC.filter(t=>(!F.e||t.e===F.e)&&(!F.t||t.t===F.t)&&(!q||(t.ti+t.d+t.por+t.id).toLowerCase().includes(q)));
- $('#tb').innerHTML=T.map(t=>`<tr><td class="mono">#${t.id}</td><td>${t.t}</td><td>${esc(t.ti)}</td><td class="${t.p}">${t.p}</td><td class="${t.e=='Cerrado'?'Cerrado':''}">${t.e}</td><td>${esc(t.por)}</td><td>${fd(t.c)}</td><td>${t.m?`<button class="btn o" onclick="show(${t.id})"><i class="bi bi-paperclip"></i>${t.m}</button>`:''}</td><td style="white-space:nowrap"><button class="btn o" title="${t.e=='Cerrado'&&!M()?'Ver':'Editar'}" onclick="form(${t.id})"><i class="bi bi-${t.e=='Cerrado'&&!M()?'eye':'pencil-square'}"></i></button>${M()?` <button class="btn r" title="Eliminar" onclick="rm(${t.id})"><i class="bi bi-trash3"></i></button>`:''}</td></tr>`).join('')||'<tr><td colspan=9>Sin registros</td></tr>'}
-async function form(id){const t=id?(await sb.from('tickets').select('*').eq('id',id).single()).data:{t:'Incidencia',p:'Media',e:'Abierto',k:'Otro',ti:'',d:'',h:[]},ro=t.e==='Cerrado'&&!M(),sel=(n,a,v)=>`<select id="${n}" ${ro?'disabled':''}>${a.map(x=>`<option ${x==v?'selected':''}>${x}</option>`).join('')}</select>`;
+ $('#tb').innerHTML=T.map((t,i)=>`<tr style="animation-delay:${Math.min(i,12)*30}ms"><td class="mono">#${t.id}</td><td>${t.t}</td><td>${esc(t.ti)}</td><td class="${t.p}">${t.p}</td><td class="${t.e=='Cerrado'?'Cerrado':''}">${t.e}</td><td>${esc(t.por)}</td><td>${fd(t.c)}</td><td>${t.m?`<button class="btn o" onclick="show(${t.id})"><i class="bi bi-paperclip"></i>${t.m}</button>`:''}</td><td style="white-space:nowrap"><button class="btn o" title="${t.e=='Cerrado'&&!M()?'Ver':'Editar'}" onclick="tform(${t.id})"><i class="bi bi-${t.e=='Cerrado'&&!M()?'eye':'pencil-square'}"></i></button>${M()?` <button class="btn r" title="Eliminar" onclick="rm(${t.id})"><i class="bi bi-trash3"></i></button>`:''}</td></tr>`).join('')||'<tr><td colspan=9>Sin registros</td></tr>'}
+async function tform(id){const t=id?(await sb.from('tickets').select('*').eq('id',id).single()).data:{t:'Incidencia',p:'Media',e:'Abierto',k:'Otro',ti:'',d:'',h:[]},ro=t.e==='Cerrado'&&!M(),sel=(n,a,v)=>`<select id="${n}" ${ro?'disabled':''}>${a.map(x=>`<option ${x==v?'selected':''}>${x}</option>`).join('')}</select>`;
  $('#dlg').innerHTML=`<h3>${id?'Ticket #'+id:'Nuevo ticket'}</h3>${ro?'<p class="warn">Ticket cerrado: solo el MASTER puede modificarlo.</p>':''}<div class="row"><div><label>Tipo</label>${sel('ft',['Incidencia','Requerimiento'],t.t)}</div><div><label>Prioridad</label>${sel('fp',PR,t.p)}</div><div><label>Categoría</label>${sel('fk',CA,t.k)}</div><div><label>Estado</label>${sel('fe',M()?ES:ES.slice(0,2).concat(t.e=='Cerrado'?['Cerrado']:[]),t.e)}</div></div>
  <label>Título</label><input id="fti" maxlength="120" value="${esc(t.ti)}" ${ro?'disabled':''}><label>Descripción</label><textarea id="fd" rows="4" maxlength="2000" ${ro?'disabled':''}>${esc(t.d)}</textarea>
  ${ro?'':`<label>Nota de seguimiento</label><input id="fn" maxlength="300"><label>Imágenes (máx 10 MB) o videos (se comprimen a ≤16 MB)</label><input id="ff" type="file" accept="image/*,video/*" multiple>`}
@@ -101,13 +160,13 @@ async function save(id){const old=id?(await sb.from('tickets').select('*').eq('i
  if(e==='Cerrado'&&!M())return alert('Solo el MASTER puede cerrar tickets');if(!ti)return alert('Escribe un título');
  const row={t:$('#ft').value,p:$('#fp').value,k:$('#fk').value,ti,d:$('#fd').value.trim(),e,u:Date.now(),cl:e==='Cerrado'?(old?.cl||Date.now()):null,
   h:[...(old?.h||[]),{f:Date.now(),u:U.n,a:!old?'Ticket creado':(old.e!==e?`Estado: ${old.e} → ${e}`:'Editado')+($('#fn').value?'. '+$('#fn').value:'')}]};
- $('#sv').disabled=1;if(!old)Object.assign(row,{c:Date.now(),por:U.n,m:0});
+ $('#sv').disabled=1;$('#sv').classList.add('ld');if(!old)Object.assign(row,{c:Date.now(),por:U.n,m:0});
  const r=old?await sb.from('tickets').update(row).eq('id',id).select().single():await sb.from('tickets').insert(row).select().single();
- if(r.error){$('#sv').disabled=0;return alert(r.error.message)}let t=r.data,n=t.m;
+ if(r.error){$('#sv').disabled=0;$('#sv').classList.remove('ld');return alert(r.error.message)}let t=r.data,n=t.m;
  try{for(const f of $('#ff').files){$('#fs').textContent='Procesando '+f.name+'…';const b=f.type.startsWith('video')?await vid(f):await img(f),path=`${t.id}/${crypto.randomUUID()}.${b.type.split('/')[1]}`;
   $('#fs').textContent='Subiendo '+f.name+'…';const u=await sb.storage.from(BK).upload(path,b,{contentType:b.type});if(u.error)throw u.error;
   await sb.from('media').insert({tid:t.id,path,type:b.type,n:f.name,size:b.size});n++}}catch(x){alert(x.message)}
- if(n!==t.m)await sb.from('tickets').update({m:n}).eq('id',t.id);$('#dlg').close();go(V)}
+ if(n!==t.m)await sb.from('tickets').update({m:n}).eq('id',t.id);$('#dlg').close();toast(old?'Ticket actualizado':'Ticket creado');go(V)}
 async function img(f){if(!f.type.startsWith('image/'))throw Error('Formato no válido: '+f.name);if(f.size>10485760)throw Error(f.name+' supera 10 MB');
  const bm=await createImageBitmap(f),s=Math.min(1,1600/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=bm.width*s;c.height=bm.height*s;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.8))}
 async function vid(f){if(f.size<=16e6&&f.type==='video/webm'||f.size<=3e6)return f;const v=document.createElement('video');v.muted=true;v.playsInline=true;v.src=URL.createObjectURL(f);
@@ -118,11 +177,11 @@ async function vid(f){if(f.size<=16e6&&f.type==='video/webm'||f.size<=3e6)return
  mr.stop();await dn;URL.revokeObjectURL(v.src);const b=new Blob(ch,{type:'video/webm'});if(b.size>16e6)throw Error(f.name+' sigue >16 MB tras comprimir');return b}
 async function show(id){const {data:ms}=await sb.from('media').select('*').eq('tid',id),{data:us}=await sb.storage.from(BK).createSignedUrls(ms.map(m=>m.path),3600);
  $('#dlg').innerHTML=`<h3>Adjuntos del ticket #${id}</h3><div class="md">${ms.map((m,i)=>{const u=us[i].signedUrl;return m.type.startsWith('video')?`<video src="${u}" controls></video>`:`<a href="${u}" target="_blank"><img src="${u}" alt=""></a>`}).join('')}</div><button class="btn o" onclick="$('#dlg').close()">Cerrar</button>`;$('#dlg').showModal()}
-async function rm(id){if(!M()||!confirm('¿Eliminar ticket #'+id+' y sus adjuntos?'))return;const {data:ms}=await sb.from('media').select('path').eq('tid',id);if(ms.length)await sb.storage.from(BK).remove(ms.map(m=>m.path));await sb.from('tickets').delete().eq('id',id);go(V)}
+async function rm(id){if(!M()||!confirm('¿Eliminar ticket #'+id+' y sus adjuntos?'))return;const {data:ms}=await sb.from('media').select('path').eq('tid',id);if(ms.length)await sb.storage.from(BK).remove(ms.map(m=>m.path));await sb.from('tickets').delete().eq('id',id);toast('Ticket eliminado');go(V)}
 /* ---------- Usuarios (MASTER) ---------- */
 async function users(){if(!M())return;const {data:us}=await sb.from('profiles').select('*').order('email');
  $('#v').innerHTML=`<div class="card"><button class="btn" onclick="uform()"><i class="bi bi-person-plus"></i>Nuevo usuario</button></div><div class="card tw"><table><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr>${us.map(u=>`<tr style="${u.a?'':'opacity:.55'}"><td>${esc(u.email)}</td><td>${esc(u.n)}</td><td>${u.r==='master'?'<i class="bi bi-shield-check"></i> MASTER':'<i class="bi bi-person"></i> Usuario'}</td><td>${u.a?'<span class="Cerrado"><i class="bi bi-check-circle-fill"></i> Activo</span>':'<i class="bi bi-slash-circle"></i> Deshabilitado'}</td><td style="white-space:nowrap"><button class="btn o" title="Editar" onclick="uform('${u.id}')"><i class="bi bi-pencil-square"></i></button> ${u.id!==U.id?`<button class="btn ${u.a?'r':''}" title="${u.a?'Deshabilitar':'Habilitar'}" onclick="utog('${u.id}',${!u.a})"><i class="bi bi-${u.a?'person-slash':'person-check'}"></i></button>`:''}</td></tr>`).join('')}</table></div>`}
-async function utog(id,a){if(!M()||id===U.id)return;if(!confirm(a?'¿Habilitar este usuario?':'¿Deshabilitar este usuario? Perderá el acceso de inmediato.'))return;const {error}=await sb.from('profiles').update({a}).eq('id',id);if(error)alert(error.message);users()}
+async function utog(id,a){if(!M()||id===U.id)return;if(!confirm(a?'¿Habilitar este usuario?':'¿Deshabilitar este usuario? Perderá el acceso de inmediato.'))return;const {error}=await sb.from('profiles').update({a}).eq('id',id);if(error)alert(error.message);else toast(a?'Usuario habilitado':'Usuario deshabilitado');users()}
 async function uform(k){const u=k?(await sb.from('profiles').select('*').eq('id',k).single()).data:{email:'',n:'',r:'user',a:true};$('#dlg').innerHTML=`<h3>${k?'Editar':'Nuevo'} usuario</h3><label>Correo</label><input id="uu" type="email" value="${esc(u.email)}"><label>Nombre</label><input id="un" value="${esc(u.n)}"><label>Rol</label><select id="ur"><option value="user" ${u.r=='user'?'selected':''}>Usuario (registra y edita)</option><option value="master" ${u.r=='master'?'selected':''}>MASTER (administrador)</option></select><label>Estado</label><select id="ua"><option value="1" ${u.a?'selected':''}>Activo</option><option value="0" ${u.a?'':'selected'}>Deshabilitado</option></select>
  ${k?'<p class="s"><i class="bi bi-lock"></i> La contraseña solo la puede cambiar cada usuario.</p>':'<label>Contraseña inicial (mín. 8)</label><input id="up" type="password">'}
  <div class="row" style="margin-top:12px"><button class="btn o" onclick="$('#dlg').close()">Cancelar</button><button class="btn" onclick="usave('${k||''}')">Guardar</button></div>`;$('#dlg').showModal()}
@@ -131,7 +190,7 @@ async function usave(k){if(!M())return;const n=$('#un').value.trim(),r=$('#ur').
  if(!k){const p=$('#up').value;if(p.length<8)return alert('Contraseña mínima de 8 caracteres');
   const {data,error}=await sb2.auth.signUp({email:em,password:p,options:{data:{n:n||em}}});if(error)return alert(error.message);id=data.user.id}
  else{const cur=(await sb.from('profiles').select('email').eq('id',k).single()).data;if(cur.email!==em){const {error}=await sb.rpc('admin_email',{uid:k,em});if(error)return alert(error.message)}}
- const {error}=await sb.from('profiles').update({n:n||em,r,a}).eq('id',id);if(error)return alert(error.message);$('#dlg').close();users()}
+ const {error}=await sb.from('profiles').update({n:n||em,r,a}).eq('id',id);if(error)return alert(error.message);$('#dlg').close();toast('Usuario guardado');users()}
 /* ---------- Almacenamiento + exportación (MASTER) ---------- */
 function xls(rows,name){const h=Object.keys(rows[0]||{ID:1});const b=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body><table border="1"><tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+h.map(x=>`<td>${esc(r[x])}</td>`).join('')+'</tr>').join('')+'</table></body></html>'],{type:'application/vnd.ms-excel'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name+'.xls';a.click()}
 const flat=t=>({ID:t.id,Tipo:t.t,Título:t.ti,Descripción:t.d,Categoría:t.k,Prioridad:t.p,Estado:t.e,'Creado por':t.por,'Fecha creación':fd(t.c),'Fecha cierre':fd(t.cl),'Horas resolución':t.cl?((t.cl-t.c)/36e5).toFixed(1):'',Adjuntos:t.m,Historial:(t.h||[]).map(h=>`${fd(h.f)} ${h.u}: ${h.a}`).join(' | ')});
@@ -144,6 +203,6 @@ async function expOld(){const o=await olds();if(!o.length)return alert('Nada que
 async function purge(){if(!M())return;const o=await olds();if(!o.length)return alert('No hay registros mayores a 30 días');
  if(!OK&&!confirm('Aún no exportaste el histórico. ¿Borrar de todos modos?'))return;if(!confirm(`Se borrarán ${o.length} tickets y sus adjuntos de forma permanente. ¿Continuar?`))return;
  const ids=o.map(t=>t.id),{data:ms}=await sb.from('media').select('path').in('tid',ids);for(let i=0;i<ms.length;i+=100)await sb.storage.from(BK).remove(ms.slice(i,i+100).map(m=>m.path));
- await sb.from('tickets').delete().in('id',ids);OK=0;store()}
+ await sb.from('tickets').delete().in('id',ids);OK=0;toast('Registros depurados');store()}
 boot();
 </script></body></html>
