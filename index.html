@@ -48,7 +48,8 @@ th{text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;font-weight:60
 <dialog id="dlg"></dialog>
 <script>
 /* ====== CONFIGURACIÓN: pega aquí los datos de tu proyecto Supabase (Project Settings > API) ====== */
-const SB_URL='https://skzjpceogejlvrklkudw.supabase.co/rest/v1/',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrempwY2VvZ2VqbHZya2xrdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MTIyNTEsImV4cCI6MjEwNzQ4ODI1MX0.q1bdSqNjGGRKdZD8dbs8NuSAVwaGdpiysksHoZO6ZZk';
+const SB_URL='https://skzjpceogejlvrklkudw.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrempwY2VvZ2VqbHZya2xrdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MTIyNTEsImV4cCI6MjEwNzQ4ODI1MX0.q1bdSqNjGGRKdZD8dbs8NuSAVwaGdpiysksHoZO6ZZk';
 /* ================================================================================================ */
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fd=x=>x?new Date(x).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
