@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TV Helpdesk</title>
+<style>
+:root{--bg:#f4f6fb;--c:#fff;--t:#1d2433;--m:#6b7590;--a:#2563eb;--b:#e1e6f0;--g:linear-gradient(135deg,#2563eb,#7c3aed)}
+[data-t=oscuro]{--bg:#0f1420;--c:#182030;--t:#e8ecf5;--m:#93a0bd;--a:#60a5fa;--b:#273049;--g:linear-gradient(135deg,#1e3a8a,#312e81)}
+[data-t=mexico]{--bg:#f3f8f1;--t:#14301f;--a:#006847;--b:#d5e3d6;--g:linear-gradient(90deg,#006847,#1b8a5a 45%,#ce1126)}
+[data-t=halloween]{--bg:#1a1020;--c:#2a1838;--t:#ffe9d2;--m:#c4a6cf;--a:#ff7a00;--b:#44274f;--g:linear-gradient(135deg,#ff7a00,#6a1b9a)}
+[data-t=muertos]{--bg:#1c1230;--c:#2b1b45;--t:#fff1d6;--m:#c9b3e0;--a:#ff9f1c;--b:#4a3070;--g:linear-gradient(135deg,#e63fa0,#ff9f1c)}
+[data-t=reyes]{--bg:#fff8e8;--t:#3a2a10;--a:#b8860b;--b:#ecdcb0;--g:linear-gradient(135deg,#6a1b9a,#d4a017)}
+[data-t=valentin]{--bg:#fff0f3;--t:#4a1424;--a:#d6246e;--b:#f5cfd9;--g:linear-gradient(135deg,#d6246e,#ff7aa2)}
+[data-t=navidad]{--bg:#f4faf5;--t:#14301f;--a:#c1121f;--b:#cfe3d3;--g:linear-gradient(135deg,#14532d,#c1121f)}
+*{box-sizing:border-box}body{margin:0;font:14.5px/1.5 'IBM Plex Sans','Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;background:var(--bg);color:var(--t);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--g);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+header b{font-size:18px;margin-right:auto}nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button,.hb{background:#ffffff26;color:#fff;border:0;padding:7px 12px;border-radius:8px;cursor:pointer}nav button.on{background:#fff;color:#222}
+header select{padding:6px;border-radius:8px;border:0}
+main{flex:1;padding:16px;max-width:1200px;width:100%;margin:auto}
+footer{text-align:center;padding:14px;color:var(--m);font-size:13px}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.k{font-size:28px;font-weight:700;color:var(--a)}.s{color:var(--m);font-size:13px}
+.br{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.br i{display:block;height:14px;border-radius:7px;background:var(--a);min-width:3px}.br span:first-child{width:90px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid var(--b);text-align:left;font-size:14px}th{color:var(--m)}
+.tw{overflow-x:auto}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--b);border-radius:8px;background:var(--bg);color:var(--t);font:inherit}
+label{display:block;margin:8px 0 3px;font-size:13px;color:var(--m)}
+.btn{background:var(--a);color:#fff;border:0;padding:9px 14px;border-radius:8px;cursor:pointer}.btn.r{background:#dc2626}.btn.o{background:transparent;color:var(--a);border:1px solid var(--a)}
+.Crítica,.Alta{color:#dc2626;font-weight:600}.Cerrado{color:#16a34a}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+dialog{border:0;border-radius:14px;max-width:640px;width:94%;background:var(--c);color:var(--t);padding:18px}dialog::backdrop{background:#0008}
+.warn{background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;margin-bottom:12px}
+.pb{height:16px;background:var(--b);border-radius:8px;overflow:hidden}.pb i{display:block;height:100%;background:var(--a)}
+#lg{max-width:340px;margin:12vh auto}.md img,.md video{max-width:100%;border-radius:8px;margin:6px 0}
+button{font:inherit}
+h2,h3,header b{font-weight:600;letter-spacing:-.01em}
+th{text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;font-weight:600}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px}
+.k{font-feature-settings:'tnum';font-weight:600}.ki{float:right;font-size:22px;color:var(--a);opacity:.65}
+.bi{vertical-align:-.125em}.btn .bi,nav .bi,.hb .bi{margin-right:6px}.btn .bi:only-child,.hb .bi:only-child{margin:0}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head><body>
+<div id="app" style="display:contents"></div>
+<dialog id="dlg"></dialog>
+<script>
+/* ====== CONFIGURACIÓN: pega aquí los datos de tu proyecto Supabase (Project Settings > API) ====== */
+const SB_URL='https://skzjpceogejlvrklkudw.supabase.co/rest/v1/',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrempwY2VvZ2VqbHZya2xrdWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MTIyNTEsImV4cCI6MjEwNzQ4ODI1MX0.q1bdSqNjGGRKdZD8dbs8NuSAVwaGdpiysksHoZO6ZZk';
+/* ================================================================================================ */
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fd=x=>x?new Date(x).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}):'—';
+const TH={claro:['☀️ Claro',''],oscuro:['🌙 Oscuro','🌙'],mexico:['🇲🇽 Independencia de México','🇲🇽🎉'],halloween:['🎃 Halloween','🎃👻'],muertos:['💀 Día de Muertos','💀🌼🕯️'],reyes:['👑 Reyes Magos','👑🍞🎁'],valentin:['💘 San Valentín','💘🌹'],navidad:['🎄 Navidad','🎄⛄']};
+let sb,sb2,U,V='dash',F={q:'',e:'',t:''},OK=0,TC=[];
+const M=()=>U&&U.r==='master',th=()=>localStorage['tvt_'+U.id]||'claro',BK='adjuntos';
+const tk=async()=>(await sb.from('tickets').select('*').order('id',{ascending:false}).limit(5000)).data||[];
+/* ---------- Sesión (Supabase Auth). Los permisos reales los aplica la base de datos (RLS) ---------- */
+async function boot(){
+ if(SB_URL.startsWith('PEGA'))return $('#app').innerHTML='<main><div class="card warn">Configura <b>SB_URL</b> y <b>SB_KEY</b> al inicio de index.html.</div></main>';
+ sb=supabase.createClient(SB_URL,SB_KEY);sb2=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+ sb.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY')setTimeout(chpw,500)});
+ (await sb.auth.getSession()).data.session?enter():loginUI()}
+async function enter(){const {data:{user}}=await sb.auth.getUser();const {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+ if(!p||!p.a){await sb.auth.signOut();loginUI();$('#le').textContent='Cuenta inactiva. Pide al MASTER que la active.';return}U=p;shell()}
+function loginUI(){$('#app').innerHTML=`<main><div class="card" id="lg"><h2><i class="bi bi-headset"></i> TV Helpdesk</h2><label>Correo</label><input id="lu" type="email" autocomplete="username"><label>Contraseña</label><input id="lp" type="password" autocomplete="current-password" onkeydown="event.key=='Enter'&&login()"><p id="le" style="color:#dc2626"></p><button class="btn" style="width:100%" onclick="login()">Entrar</button><p class="s" style="text-align:center"><a href="#" onclick="forgot();return false">Olvidé mi contraseña</a></p></div></main><footer>Diseñado por TECHNOVARUM</footer>`}
+async function login(){const L=JSON.parse(localStorage.tvl||'{"n":0,"t":0}');if(L.t>Date.now())return $('#le').textContent='Demasiados intentos. Espera 1 minuto.';
+ const {error}=await sb.auth.signInWithPassword({email:$('#lu').value.trim(),password:$('#lp').value});
+ if(!error){localStorage.tvl='{"n":0,"t":0}';enter()}else{L.n++;if(L.n>=5){L.n=0;L.t=Date.now()+6e4}localStorage.tvl=JSON.stringify(L);$('#le').textContent='Correo o contraseña incorrectos'}}
+async function forgot(){const e=$('#lu').value.trim();if(!e)return alert('Escribe tu correo arriba');await sb.auth.resetPasswordForEmail(e,{redirectTo:location.href.split('#')[0]});alert('Si el correo existe, recibirás un enlace para restablecer.')}
+async function logout(){await sb.auth.signOut();U=null;loginUI()}
+async function chpw(){const p=prompt('Nueva contraseña (mín. 8 caracteres):');if(!p)return;if(p.length<8)return alert('Mínimo 8');const {error}=await sb.auth.updateUser({password:p});alert(error?error.message:'Contraseña actualizada')}
+/* ---------- Shell ---------- */
+function shell(){document.documentElement.dataset.t=th();
+ const nav=[['dash','<i class="bi bi-speedometer2"></i>Dashboard'],['list','<i class="bi bi-ticket-detailed"></i>Tickets'],...(M()?[['users','<i class="bi bi-people"></i>Usuarios'],['store','<i class="bi bi-hdd-stack"></i>Almacenamiento']]:[])];
+ $('#app').innerHTML=`<header><b><i class="bi bi-headset"></i> TV Helpdesk ${TH[th()][1]}</b><nav>${nav.map(n=>`<button id="n_${n[0]}" onclick="go('${n[0]}')">${n[1]}</button>`).join('')}</nav>
+ <select onchange="localStorage['tvt_'+U.id]=this.value;shell()">${Object.entries(TH).map(([k,v])=>`<option value="${k}" ${k==th()?'selected':''}>${v[0]}</option>`).join('')}</select>
+ <span>${esc(U.n)} (${M()?'MASTER':'Usuario'})</span><button class="hb" title="Cambiar mi contraseña" onclick="chpw()"><i class="bi bi-key"></i></button><button class="hb" onclick="logout()"><i class="bi bi-box-arrow-right"></i>Salir</button></header><main id="v"></main><footer>Diseñado por TECHNOVARUM</footer>`;go(V)}
+async function go(v){V=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.id==='n_'+v));await({dash,list,users,store}[v]||dash)()}
+/* ---------- Dashboard ---------- */
+const cnt=(a,f)=>a.reduce((o,x)=>(o[f(x)]=(o[f(x)]||0)+1,o),{});
+const bar=(t,o,order)=>{const ks=order||Object.keys(o),mx=Math.max(1,...ks.map(k=>o[k]||0));return`<div class="card"><b>${t}</b>${ks.map(k=>`<div class="br"><span>${esc(k)}</span><i style="width:${(o[k]||0)/mx*60}%"></i><span>${o[k]||0}</span></div>`).join('')}</div>`};
+async function dash(){const T=await tk(),cl=T.filter(t=>t.cl),av=cl.length?cl.reduce((s,t)=>s+(t.cl-t.c),0)/cl.length/36e5:0,
+ dl=x=>new Date(x).toLocaleDateString('es-MX',{day:'2-digit',month:'short'}),d7=[...Array(7)].map((_,i)=>dl(Date.now()-(6-i)*864e5)),c7=cnt(T,t=>dl(t.c));
+ $('#v').innerHTML=`<div class="grid">${[['Total',T.length,'collection'],['Abiertos',T.filter(t=>t.e==='Abierto').length,'inbox'],['En proceso',T.filter(t=>t.e==='En proceso').length,'hourglass-split'],['Cerrados',cl.length,'check2-circle'],['Resolución prom.',av.toFixed(1)+' h','stopwatch'],['Críticos activos',T.filter(t=>t.p==='Crítica'&&!t.cl).length,'lightning-charge-fill']].map(k=>`<div class="card"><i class="bi bi-${k[2]} ki"></i><div class="k">${k[1]}</div><div class="s">${k[0]}</div></div>`).join('')}</div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${bar('Por estado',cnt(T,t=>t.e),['Abierto','En proceso','Cerrado'])}${bar('Por prioridad',cnt(T,t=>t.p),['Crítica','Alta','Media','Baja'])}${bar('Por tipo',cnt(T,t=>t.t))}${bar('Por categoría',cnt(T,t=>t.k))}${bar('Últimos 7 días',c7,d7)}${bar('Por usuario',cnt(T,t=>t.por))}</div>`}
+/* ---------- Tickets ---------- */
+const PR=['Baja','Media','Alta','Crítica'],ES=['Abierto','En proceso','Cerrado'],CA=['Hardware','Software','Red','Accesos','Mantenimiento','Otro'];
+async function list(){TC=await tk();$('#v').innerHTML=`<div class="card"><div class="row"><input placeholder="Buscar ticket…" value="${esc(F.q)}" oninput="F.q=this.value;rows()"><select onchange="F.e=this.value;rows()"><option value="">Todos los estados</option>${ES.map(e=>`<option ${F.e==e?'selected':''}>${e}</option>`).join('')}</select><select onchange="F.t=this.value;rows()"><option value="">Todos los tipos</option>${['Incidencia','Requerimiento'].map(e=>`<option ${F.t==e?'selected':''}>${e}</option>`).join('')}</select><button class="btn" onclick="form()"><i class="bi bi-plus-lg"></i>Nuevo ticket</button></div></div><div class="card tw"><table><thead><tr><th>#</th><th>Tipo</th><th>Título</th><th>Prioridad</th><th>Estado</th><th>Creó</th><th>Fecha</th><th><i class="bi bi-paperclip"></i></th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;rows()}
+function rows(){const q=F.q.toLowerCase(),T=TC.filter(t=>(!F.e||t.e===F.e)&&(!F.t||t.t===F.t)&&(!q||(t.ti+t.d+t.por+t.id).toLowerCase().includes(q)));
+ $('#tb').innerHTML=T.map(t=>`<tr><td class="mono">#${t.id}</td><td>${t.t}</td><td>${esc(t.ti)}</td><td class="${t.p}">${t.p}</td><td class="${t.e=='Cerrado'?'Cerrado':''}">${t.e}</td><td>${esc(t.por)}</td><td>${fd(t.c)}</td><td>${t.m?`<button class="btn o" onclick="show(${t.id})"><i class="bi bi-paperclip"></i>${t.m}</button>`:''}</td><td style="white-space:nowrap"><button class="btn o" title="${t.e=='Cerrado'&&!M()?'Ver':'Editar'}" onclick="form(${t.id})"><i class="bi bi-${t.e=='Cerrado'&&!M()?'eye':'pencil-square'}"></i></button>${M()?` <button class="btn r" title="Eliminar" onclick="rm(${t.id})"><i class="bi bi-trash3"></i></button>`:''}</td></tr>`).join('')||'<tr><td colspan=9>Sin registros</td></tr>'}
+async function form(id){const t=id?(await sb.from('tickets').select('*').eq('id',id).single()).data:{t:'Incidencia',p:'Media',e:'Abierto',k:'Otro',ti:'',d:'',h:[]},ro=t.e==='Cerrado'&&!M(),sel=(n,a,v)=>`<select id="${n}" ${ro?'disabled':''}>${a.map(x=>`<option ${x==v?'selected':''}>${x}</option>`).join('')}</select>`;
+ $('#dlg').innerHTML=`<h3>${id?'Ticket #'+id:'Nuevo ticket'}</h3>${ro?'<p class="warn">Ticket cerrado: solo el MASTER puede modificarlo.</p>':''}<div class="row"><div><label>Tipo</label>${sel('ft',['Incidencia','Requerimiento'],t.t)}</div><div><label>Prioridad</label>${sel('fp',PR,t.p)}</div><div><label>Categoría</label>${sel('fk',CA,t.k)}</div><div><label>Estado</label>${sel('fe',M()?ES:ES.slice(0,2).concat(t.e=='Cerrado'?['Cerrado']:[]),t.e)}</div></div>
+ <label>Título</label><input id="fti" maxlength="120" value="${esc(t.ti)}" ${ro?'disabled':''}><label>Descripción</label><textarea id="fd" rows="4" maxlength="2000" ${ro?'disabled':''}>${esc(t.d)}</textarea>
+ ${ro?'':`<label>Nota de seguimiento</label><input id="fn" maxlength="300"><label>Imágenes (máx 10 MB) o videos (se comprimen a ≤16 MB)</label><input id="ff" type="file" accept="image/*,video/*" multiple>`}
+ <p id="fs" class="s"></p>${id?`<details><summary>Historial</summary>${(t.h||[]).map(h=>`<div class="s">${fd(h.f)} · ${esc(h.u)}: ${esc(h.a)}</div>`).join('')}</details>`:''}
+ <div class="row" style="margin-top:12px"><button class="btn o" onclick="$('#dlg').close()">Cerrar</button>${ro?'':`<button class="btn" id="sv" onclick="save(${id||0})">Guardar</button>`}</div>`;$('#dlg').showModal()}
+async function save(id){const old=id?(await sb.from('tickets').select('*').eq('id',id).single()).data:null,e=$('#fe').value,ti=$('#fti').value.trim();
+ if(e==='Cerrado'&&!M())return alert('Solo el MASTER puede cerrar tickets');if(!ti)return alert('Escribe un título');
+ const row={t:$('#ft').value,p:$('#fp').value,k:$('#fk').value,ti,d:$('#fd').value.trim(),e,u:Date.now(),cl:e==='Cerrado'?(old?.cl||Date.now()):null,
+  h:[...(old?.h||[]),{f:Date.now(),u:U.n,a:!old?'Ticket creado':(old.e!==e?`Estado: ${old.e} → ${e}`:'Editado')+($('#fn').value?'. '+$('#fn').value:'')}]};
+ $('#sv').disabled=1;if(!old)Object.assign(row,{c:Date.now(),por:U.n,m:0});
+ const r=old?await sb.from('tickets').update(row).eq('id',id).select().single():await sb.from('tickets').insert(row).select().single();
+ if(r.error){$('#sv').disabled=0;return alert(r.error.message)}let t=r.data,n=t.m;
+ try{for(const f of $('#ff').files){$('#fs').textContent='Procesando '+f.name+'…';const b=f.type.startsWith('video')?await vid(f):await img(f),path=`${t.id}/${crypto.randomUUID()}.${b.type.split('/')[1]}`;
+  $('#fs').textContent='Subiendo '+f.name+'…';const u=await sb.storage.from(BK).upload(path,b,{contentType:b.type});if(u.error)throw u.error;
+  await sb.from('media').insert({tid:t.id,path,type:b.type,n:f.name,size:b.size});n++}}catch(x){alert(x.message)}
+ if(n!==t.m)await sb.from('tickets').update({m:n}).eq('id',t.id);$('#dlg').close();go(V)}
+async function img(f){if(!f.type.startsWith('image/'))throw Error('Formato no válido: '+f.name);if(f.size>10485760)throw Error(f.name+' supera 10 MB');
+ const bm=await createImageBitmap(f),s=Math.min(1,1600/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=bm.width*s;c.height=bm.height*s;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.8))}
+async function vid(f){if(f.size<=16e6&&f.type==='video/webm'||f.size<=3e6)return f;const v=document.createElement('video');v.muted=true;v.playsInline=true;v.src=URL.createObjectURL(f);
+ await new Promise((r,j)=>{v.onloadedmetadata=r;v.onerror=()=>j(Error('No se pudo leer '+f.name))});if(v.duration>180)throw Error(f.name+': máximo 3 minutos');
+ const sc=Math.min(1,640/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement('canvas');c.width=Math.round(v.videoWidth*sc/2)*2;c.height=Math.round(v.videoHeight*sc/2)*2;const x=c.getContext('2d'),ch=[],mr=new MediaRecorder(c.captureStream(24),{mimeType:'video/webm',videoBitsPerSecond:600000});
+ mr.ondataavailable=e=>ch.push(e.data);const dn=new Promise(r=>mr.onstop=r);mr.start();await v.play();
+ await new Promise(r=>{v.onended=r;(function d(){x.drawImage(v,0,0,c.width,c.height);$('#fs').textContent=`Comprimiendo video… ${Math.round(v.currentTime/v.duration*100)}%`;if(!v.ended)requestAnimationFrame(d)})()});
+ mr.stop();await dn;URL.revokeObjectURL(v.src);const b=new Blob(ch,{type:'video/webm'});if(b.size>16e6)throw Error(f.name+' sigue >16 MB tras comprimir');return b}
+async function show(id){const {data:ms}=await sb.from('media').select('*').eq('tid',id),{data:us}=await sb.storage.from(BK).createSignedUrls(ms.map(m=>m.path),3600);
+ $('#dlg').innerHTML=`<h3>Adjuntos del ticket #${id}</h3><div class="md">${ms.map((m,i)=>{const u=us[i].signedUrl;return m.type.startsWith('video')?`<video src="${u}" controls></video>`:`<a href="${u}" target="_blank"><img src="${u}" alt=""></a>`}).join('')}</div><button class="btn o" onclick="$('#dlg').close()">Cerrar</button>`;$('#dlg').showModal()}
+async function rm(id){if(!M()||!confirm('¿Eliminar ticket #'+id+' y sus adjuntos?'))return;const {data:ms}=await sb.from('media').select('path').eq('tid',id);if(ms.length)await sb.storage.from(BK).remove(ms.map(m=>m.path));await sb.from('tickets').delete().eq('id',id);go(V)}
+/* ---------- Usuarios (MASTER) ---------- */
+async function users(){if(!M())return;const {data:us}=await sb.from('profiles').select('*').order('email');
+ $('#v').innerHTML=`<div class="card"><button class="btn" onclick="uform()"><i class="bi bi-person-plus"></i>Nuevo usuario</button></div><div class="card tw"><table><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr>${us.map(u=>`<tr style="${u.a?'':'opacity:.55'}"><td>${esc(u.email)}</td><td>${esc(u.n)}</td><td>${u.r==='master'?'<i class="bi bi-shield-check"></i> MASTER':'<i class="bi bi-person"></i> Usuario'}</td><td>${u.a?'<span class="Cerrado"><i class="bi bi-check-circle-fill"></i> Activo</span>':'<i class="bi bi-slash-circle"></i> Deshabilitado'}</td><td style="white-space:nowrap"><button class="btn o" title="Editar" onclick="uform('${u.id}')"><i class="bi bi-pencil-square"></i></button> ${u.id!==U.id?`<button class="btn ${u.a?'r':''}" title="${u.a?'Deshabilitar':'Habilitar'}" onclick="utog('${u.id}',${!u.a})"><i class="bi bi-${u.a?'person-slash':'person-check'}"></i></button>`:''}</td></tr>`).join('')}</table></div>`}
+async function utog(id,a){if(!M()||id===U.id)return;if(!confirm(a?'¿Habilitar este usuario?':'¿Deshabilitar este usuario? Perderá el acceso de inmediato.'))return;const {error}=await sb.from('profiles').update({a}).eq('id',id);if(error)alert(error.message);users()}
+async function uform(k){const u=k?(await sb.from('profiles').select('*').eq('id',k).single()).data:{email:'',n:'',r:'user',a:true};$('#dlg').innerHTML=`<h3>${k?'Editar':'Nuevo'} usuario</h3><label>Correo</label><input id="uu" type="email" value="${esc(u.email)}"><label>Nombre</label><input id="un" value="${esc(u.n)}"><label>Rol</label><select id="ur"><option value="user" ${u.r=='user'?'selected':''}>Usuario (registra y edita)</option><option value="master" ${u.r=='master'?'selected':''}>MASTER (administrador)</option></select><label>Estado</label><select id="ua"><option value="1" ${u.a?'selected':''}>Activo</option><option value="0" ${u.a?'':'selected'}>Deshabilitado</option></select>
+ ${k?'<p class="s"><i class="bi bi-lock"></i> La contraseña solo la puede cambiar cada usuario.</p>':'<label>Contraseña inicial (mín. 8)</label><input id="up" type="password">'}
+ <div class="row" style="margin-top:12px"><button class="btn o" onclick="$('#dlg').close()">Cancelar</button><button class="btn" onclick="usave('${k||''}')">Guardar</button></div>`;$('#dlg').showModal()}
+async function usave(k){if(!M())return;const n=$('#un').value.trim(),r=$('#ur').value,a=$('#ua').value==='1',em=$('#uu').value.trim().toLowerCase();let id=k;
+ if(!em)return alert('El correo es obligatorio');if(k===U.id&&(r!=='master'||!a))return alert('No puedes quitarte tu propio acceso');
+ if(!k){const p=$('#up').value;if(p.length<8)return alert('Contraseña mínima de 8 caracteres');
+  const {data,error}=await sb2.auth.signUp({email:em,password:p,options:{data:{n:n||em}}});if(error)return alert(error.message);id=data.user.id}
+ else{const cur=(await sb.from('profiles').select('email').eq('id',k).single()).data;if(cur.email!==em){const {error}=await sb.rpc('admin_email',{uid:k,em});if(error)return alert(error.message)}}
+ const {error}=await sb.from('profiles').update({n:n||em,r,a}).eq('id',id);if(error)return alert(error.message);$('#dlg').close();users()}
+/* ---------- Almacenamiento + exportación (MASTER) ---------- */
+function xls(rows,name){const h=Object.keys(rows[0]||{ID:1});const b=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body><table border="1"><tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+h.map(x=>`<td>${esc(r[x])}</td>`).join('')+'</tr>').join('')+'</table></body></html>'],{type:'application/vnd.ms-excel'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name+'.xls';a.click()}
+const flat=t=>({ID:t.id,Tipo:t.t,Título:t.ti,Descripción:t.d,Categoría:t.k,Prioridad:t.p,Estado:t.e,'Creado por':t.por,'Fecha creación':fd(t.c),'Fecha cierre':fd(t.cl),'Horas resolución':t.cl?((t.cl-t.c)/36e5).toFixed(1):'',Adjuntos:t.m,Historial:(t.h||[]).map(h=>`${fd(h.f)} ${h.u}: ${h.a}`).join(' | ')});
+const olds=async()=>(await tk()).filter(t=>t.cl&&t.cl<Date.now()-30*864e5);
+async function store(){if(!M())return;const {data:u}=await sb.rpc('uso'),T=await tk(),old=T.filter(t=>t.cl&&t.cl<Date.now()-30*864e5),L=[['Base de datos',u.db,500*1048576],['Archivos (imágenes/videos)',u.files,1024*1048576]],mg=x=>(x/1048576).toFixed(1)+' MB',hi=L.some(l=>l[1]/l[2]>.7);
+ $('#v').innerHTML=`${hi||old.length?`<div class="warn"><i class="bi bi-exclamation-triangle-fill"></i> ${hi?'Almacenamiento arriba del 70 %. ':''}${old.length?`Hay ${old.length} ticket(s) cerrados con más de 30 días. `:''}Exporta el histórico y depura.</div>`:''}
+ <div class="card"><b>Espacio del plan gratuito de Supabase</b>${L.map(l=>`<div style="margin:12px 0"><div class="s">${l[0]}: ${mg(l[1])} de ${mg(l[2])} (${(l[1]/l[2]*100).toFixed(1)}%)</div><div class="pb"><i style="width:${Math.min(100,l[1]/l[2]*100)}%"></i></div></div>`).join('')}<div class="s">Tickets: ${T.length}</div></div>
+ <div class="card"><b>Depuración</b><p class="s">Tickets cerrados con más de 30 días: <b>${old.length}</b>. El Excel incluye todos los datos e historial (sin imágenes ni videos).</p><div class="row"><button class="btn o" onclick="xls(TC.map(flat),'historico_total')"><i class="bi bi-file-earmark-excel"></i>Exportar todo a Excel</button><button class="btn o" onclick="expOld()"><i class="bi bi-file-earmark-spreadsheet"></i>Exportar >30 días</button><button class="btn r" onclick="purge()"><i class="bi bi-trash3-fill"></i>Vaciar >30 días</button></div></div>`;TC=T}
+async function expOld(){const o=await olds();if(!o.length)return alert('Nada que exportar');xls(o.map(flat),'historico_30dias_'+new Date().toISOString().slice(0,10));OK=1}
+async function purge(){if(!M())return;const o=await olds();if(!o.length)return alert('No hay registros mayores a 30 días');
+ if(!OK&&!confirm('Aún no exportaste el histórico. ¿Borrar de todos modos?'))return;if(!confirm(`Se borrarán ${o.length} tickets y sus adjuntos de forma permanente. ¿Continuar?`))return;
+ const ids=o.map(t=>t.id),{data:ms}=await sb.from('media').select('path').in('tid',ids);for(let i=0;i<ms.length;i+=100)await sb.storage.from(BK).remove(ms.slice(i,i+100).map(m=>m.path));
+ await sb.from('tickets').delete().in('id',ids);OK=0;store()}
+boot();
+</script></body></html>
